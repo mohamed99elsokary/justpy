@@ -10,7 +10,7 @@ class PillButton(jp.Button):
 
 def custom_comp_test1():
     wp = jp.WebPage()
-    for i in range(5):
+    for _ in range(5):
         PillButton(text='Pill Button', click='self.text="I was clicked"', a=wp, classes='m-2')
     return wp
 

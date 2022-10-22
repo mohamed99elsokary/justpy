@@ -12,7 +12,7 @@ def html_comps6():
         image.degree = degree
 
         def straighten1(self, msg):
-            self.style = f'transform: rotate(0deg)'
+            self.style = 'transform: rotate(0deg)'
 
         def rotate_back1(self, msg):
             self.style = f'transform: rotate({self.degree}deg)'

@@ -82,16 +82,13 @@ class _QInputBase(Input):
         self.evaluate_prop = []
 
     def __setattr__(self, key, value):
-        if key == "options":
-            if isinstance(value, str):
-                self.load_json(value)
-            else:
-                self.__dict__[key] = value
-        elif key in self.slots:
+        if key == "options" and isinstance(value, str):
+            self.load_json(value)
+        elif key == "options" or key not in self.slots:
+            self.__dict__[key] = value
+        else:
             q_slot = key[: key.index("_slot")].replace("_", "-")
             self.add_scoped_slot(q_slot, value)
-        else:
-            self.__dict__[key] = value
 
     def model_update(self):
         update_value = self.model[0].data[self.model[1]]
@@ -317,7 +314,7 @@ class QSelect(_QInputBase):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.type = "object"
-        self.value = kwargs.get("value", None)
+        self.value = kwargs.get("value")
         self.prop_list = [
             "color",
             "bg-color",
@@ -410,7 +407,7 @@ class QOptionGroup(_QInputBase):
         self.options = []
         super().__init__(**kwargs)
         # Type: radio | checkbox | toggle https://quasar.dev/vue-components/option-group
-        if self.type == "checkbox" or self.type == "toggle":
+        if self.type in ["checkbox", "toggle"]:
             self.value = kwargs.get("value", [])
         else:
             self.type = "radio"
@@ -455,7 +452,7 @@ class QBtnToggle(_QInputBase):
         self.options = []
         super().__init__(**kwargs)
         self.type = "object"
-        self.value = kwargs.get("value", None)
+        self.value = kwargs.get("value")
         self.prop_list = [
             "spread",
             "no-caps",
@@ -608,10 +605,9 @@ class QRating(_QInputBase):
         if hasattr(self, "model"):
             self.model[0].data[self.model[1]] = msg.value
 
-        if not self.no_reset and (self.value == msg.value):
-            self.value = 0
-        else:
-            self.value = msg.value
+        self.value = (
+            0 if not self.no_reset and (self.value == msg.value) else msg.value
+        )
 
 
 @parse_dict
@@ -731,8 +727,7 @@ class QCheckbox(_QInputBase):
         # self.set_keyword_events(**kwargs)
 
     def convert_object_to_dict(self):
-        d = super().convert_object_to_dict()
-        return d
+        return super().convert_object_to_dict()
 
 
 @parse_dict
@@ -767,8 +762,7 @@ class QToggle(_QInputBase):
         # self.set_keyword_events(**kwargs)
 
     def convert_object_to_dict(self):
-        d = super().convert_object_to_dict()
-        return d
+        return super().convert_object_to_dict()
 
 
 @parse_dict
@@ -1902,8 +1896,7 @@ class QEditor(QInput):
         if self.kitchen_sink:
             self.toolbar = QEditor.kitchen_sink
             self.fonts = QEditor.fonts
-        d = super().convert_object_to_dict()
-        return d
+        return super().convert_object_to_dict()
 
 
 @parse_dict
@@ -2113,11 +2106,10 @@ class QSpinner(QDiv):
 
     def convert_object_to_dict(self):
         if self.spinner_type in QSpinner.spinner_types:
-            self.html_tag = "q-spinner-" + self.spinner_type
+            self.html_tag = f"q-spinner-{self.spinner_type}"
         else:
             self.html_tag = "q-spinner"
-        d = super().convert_object_to_dict()
-        return d
+        return super().convert_object_to_dict()
 
 
 @parse_dict
@@ -2367,15 +2359,12 @@ class QTree(QDiv):
         pass
 
     def __setattr__(self, key, value):
-        if key == "nodes":
-            if isinstance(value, str):
-                self.load_json(value)
-            else:
-                self.__dict__[key] = value
-        elif key in self.slots:
-            self.add_scoped_slot(key[: key.index("_")], value)
-        else:
+        if key == "nodes" and isinstance(value, str):
+            self.load_json(value)
+        elif key == "nodes" or key not in self.slots:
             self.__dict__[key] = value
+        else:
+            self.add_scoped_slot(key[: key.index("_")], value)
 
     def load_json(self, options_string):
         self.nodes = hjson.loads(options_string.encode("ascii", "ignore"))
@@ -2530,15 +2519,12 @@ class QTable(QDiv):
         pass
 
     def __setattr__(self, key, value):
-        if key in ["data", "columns"]:
-            if isinstance(value, str):
-                self.__dict__[key] = self.load_json(value)
-            else:
-                self.__dict__[key] = value
-        elif key in self.slots:
-            self.add_scoped_slot(key[: key.index("_")], value)
-        else:
+        if key in ["data", "columns"] and isinstance(value, str):
+            self.__dict__[key] = self.load_json(value)
+        elif key in ["data", "columns"] or key not in self.slots:
             self.__dict__[key] = value
+        else:
+            self.add_scoped_slot(key[: key.index("_")], value)
 
     def load_json(self, options_string):
         self.nodes = hjson.loads(options_string.encode("ascii", "ignore"))

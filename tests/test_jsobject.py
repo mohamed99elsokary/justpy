@@ -57,7 +57,6 @@ class TestJavaScriptObject(Basetest):
         if debug:
             print(options)
         self.assertTrue("chart" in options)
-        pass
 
     def test_decode_no_separating_spaces(self):
         """

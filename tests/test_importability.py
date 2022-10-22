@@ -42,4 +42,3 @@ class TestImportability(Basetest):
             print(f"{len(names)} names found")
         # @TODO - this should be shorter in the future
         self.assertTrue(len(names) > 400)
-        pass

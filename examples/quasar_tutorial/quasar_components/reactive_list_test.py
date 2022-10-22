@@ -13,10 +13,7 @@ def check_box_clicked(self, msg):
     filtered_list = list(filter(my_filter, wp.list_item_text))
 
     for c in wp.q_list.components:
-        if c.components[0].text not in filtered_list:
-            c.show = False
-        else:
-            c.show = True
+        c.show = c.components[0].text in filtered_list
 
 
 def reactive_list_test():

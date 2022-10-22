@@ -18,20 +18,17 @@ class Download:
     @staticmethod
     def get_cache_path():
         home = str(Path.home())
-        cachedir = f"{home}/.justpy"
-        return cachedir
+        return f"{home}/.justpy"
 
     @staticmethod
     def get_url_content(url: str):
         with urllib.request.urlopen(url) as url_response:
-            content = url_response.read().decode()
-            return content
+            return url_response.read().decode()
 
     @staticmethod
     def get_file_content(path: str):
         with open(path, "r") as file:
-            content = file.read()
-            return content
+            return file.read()
 
     @staticmethod
     def needs_download(file_path: str, force: bool = False) -> bool:
@@ -47,12 +44,9 @@ class Download:
             bool: True if  a download for this file needed
         """
         if not os.path.isfile(file_path):
-            result = True
-        else:
-            stats = os.stat(file_path)
-            size = stats.st_size
-            result = force or size == 0
-        return result
+            return True
+        stats = os.stat(file_path)
+        return force or stats.st_size == 0
 
     @staticmethod
     def download_file(

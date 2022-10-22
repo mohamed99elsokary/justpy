@@ -18,7 +18,7 @@ class InputWithDiv(jp.Div):
 
 def input_demo5(request):
     wp = jp.WebPage()
-    for i in range(10):
+    for _ in range(10):
         InputWithDiv(a=wp)
     return wp
 

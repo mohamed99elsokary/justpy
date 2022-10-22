@@ -68,14 +68,13 @@ class Context:
 {indent}  var use_websockets = {self.use_websockets_js};
 {indent}  var justpyComponents = {self.justpy_dict_js};
 """
-        html+=self.as_javascript_constructor(indent+"  ")
+        html += self.as_javascript_constructor(f"{indent}  ")
         html+=f"\n{indent}</script>\n{self.as_script_srcs(indent)}"
         html+=f"{indent}<script>\n{self.as_javascript_setup(indent)}\n{indent}</script>\n"
         return html
     
     def as_script_src(self,file_name:str, indent:str="  ", subdir=""):
-        src= f"{indent}<script src='/templates/js/{subdir}/{file_name}.js'></script>\n"
-        return src
+        return f"{indent}<script src='/templates/js/{subdir}/{file_name}.js'></script>\n"
     
     def as_script_srcs(self,indent:str="  "):
         """
@@ -91,8 +90,7 @@ class Context:
         """
         generate the java script setup code
         """
-        js=f"{indent}  justpy_core.setup();"
-        return js
+        return f"{indent}  justpy_core.setup();"
 
     def as_javascript_constructor(self,indent:str="    "):
         """
@@ -148,9 +146,10 @@ class PageOptions:
         return "result_ready" in self.events
 
     def get_reload_interval_ms(self) -> float:
-        reload_interval = self.page_options_dict.get("reload_interval", 0)
-        if reload_interval:
-            ms = round(reload_interval * 1000)
-        else:
-            ms = 0
-        return ms
+        return (
+            round(reload_interval * 1000)
+            if (
+                reload_interval := self.page_options_dict.get("reload_interval", 0)
+            )
+            else 0
+        )

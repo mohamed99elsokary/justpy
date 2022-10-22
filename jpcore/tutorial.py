@@ -51,7 +51,7 @@ class Tutorial():
         """
         self.examples={}
         self.path=path
-        self.name=path.replace(docs_dir+"/","")
+        self.name = path.replace(f"{docs_dir}/", "")
         tutorial_path=self.name.replace(".md","")
         self.tutorial_url=f"https://justpy.io/{tutorial_path}"
         self.github_url=f"https://github.com/justpy-org/justpy/blob/master/docs/{self.name}"
@@ -69,33 +69,23 @@ class Tutorial():
             if line.startswith("```"):
                 in_python_code=False
                 continue
-            if not in_python_code:
-                header_match= re.search("^#+\s*(.*)",line)
-                if header_match:
-                    header=header_match.group(1)
-                    header=header.strip()
-                    pass
-            else:
+            if in_python_code:
                 python_code.append(line)
-                justpy_match = re.search(
-                    """^(jp[.])?justpy[(]([a-zA-Z_0-9]*)([,]\s*(.*))?[)]([#].*)?""", line
-                )
-                if justpy_match:
-                    example_name = justpy_match.group(2)
-                    example_option=justpy_match.group(4)
-                    example_comment=justpy_match.group(5)
+                if justpy_match := re.search(
+                    """^(jp[.])?justpy[(]([a-zA-Z_0-9]*)([,]\s*(.*))?[)]([#].*)?""",
+                    line,
+                ):
+                    example_name = justpy_match[2]
+                    example_option = justpy_match[4]
+                    example_comment = justpy_match[5]
                     if not example_name:
                         example_name=example_comment
-                        pass
                     example_source=ExampleSource("tutorial")
                     example_source.lines=python_code
                     if header is not None:
                         # https://stackoverflow.com/questions/72536973/how-are-github-markdown-anchor-links-constructed
                         lower=header.strip().lower().replace(" ","-")
-                        anchor=""
-                        for c in lower:
-                            if c.isalnum() or c in "-_":
-                                anchor+=c
+                        anchor = "".join(c for c in lower if c.isalnum() or c in "-_")
                         example_source.url=f"{self.tutorial_url}#{anchor}"
                         example_source.anchor=anchor
                         example_source.description=header
@@ -105,6 +95,9 @@ class Tutorial():
                     header=None
                     python_code=[]
                     in_python_code=False
+            elif header_match := re.search("^#+\s*(.*)", line):
+                header = header_match[1]
+                header=header.strip()
                     
     def __str__(self):
         """
@@ -113,5 +106,4 @@ class Tutorial():
         Returns:
             str: a text representation of me
         """
-        text=self.path
-        return text
+        return self.path

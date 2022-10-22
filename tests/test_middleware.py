@@ -37,5 +37,4 @@ class TestMiddleWare(BaseClienttest):
         test the middleware 
         """
         _response=self.checkResponse("/webpage",debug=False)
-        pass
         

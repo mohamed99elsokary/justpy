@@ -35,7 +35,7 @@ def plot_test6():
     plt.ylabel('y data')
     d = jp.Div(classes='flex flex-wrap', a=wp)
     chart_list = []
-    for i in range(5):
+    for _ in range(5):
         chart = jp.Matplotlib(a=d, classes='m-1 p-2')
         chart.num_points = 4
         chart_list.append(chart)

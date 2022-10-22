@@ -65,7 +65,7 @@ class AgGrid(JustpyBaseComponent):
         if type(self.options) != Dict:
             self.options = Dict(self.options)
         for com in ["a", "add_to"]:
-            if com in kwargs.keys():
+            if com in kwargs:
                 kwargs[com].add_component(self)
 
     def __repr__(self):
@@ -73,11 +73,8 @@ class AgGrid(JustpyBaseComponent):
         return f"{self.__class__.__name__}(id: {self.id}, vue_type: {self.vue_type}, Grid options: {self.options})"
 
     def __setattr__(self, key, value):
-        if key == "options":
-            if isinstance(value, str):
-                self.load_json(value)
-            else:
-                super().__setattr__(key, value)
+        if key == "options" and isinstance(value, str):
+            self.load_json(value)
         else:
             super().__setattr__(key, value)
 
@@ -119,7 +116,7 @@ class AgGrid(JustpyBaseComponent):
         Args:
             df: the dataframe to load
         """
-        assert _has_pandas, f"Pandas not installed, cannot load frame"
+        assert _has_pandas, "Pandas not installed, cannot load frame"
         columnDefs = []
         for i in df.columns:
             if is_numeric_dtype(df[i]):
@@ -170,12 +167,14 @@ class AgGrid(JustpyBaseComponent):
         """
         convert object to dict
         """
-        d = dict()
-        d["vue_type"] = self.vue_type
-        d["id"] = self.id
-        d["show"] = self.show
-        d["classes"] = self.classes + " " + self.theme
-        d["style"] = self.style
+        d = {
+            "vue_type": self.vue_type,
+            "id": self.id,
+            "show": self.show,
+            "classes": f"{self.classes} {self.theme}",
+            "style": self.style,
+        }
+
         options = self.options.deepcopy()
         rows = options.get("rowData", [])
         for row_idx, row_dict in enumerate(rows):

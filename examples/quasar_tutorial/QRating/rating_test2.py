@@ -15,7 +15,7 @@ def rating_test2():
         value=2,
         debounce=0,
     )
-    for i in range(1, num_stars + 1, 1):
+    for i in range(1, num_stars + 1):
         t = jp.QTooltip(text=f"{i} rating")
         r.add_scoped_slot(f"tip-{i}", t)
     return wp

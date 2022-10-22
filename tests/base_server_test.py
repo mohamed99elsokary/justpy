@@ -65,8 +65,7 @@ class BaseAsynctest(asynctest.TestCase):
             str: the url for the path
 
         """
-        url = f"http://{self.server.host}:{self.server.port}{path}"
-        return url
+        return f"http://{self.server.host}:{self.server.port}{path}"
 
     async def getResponseHtml(self, path: str = "/"):
         """

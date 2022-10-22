@@ -50,7 +50,6 @@ class TestIssue279WithSelenium(BaseSeleniumTest):
                         "Expected sideeffect: Selenium already complains about missing button"
                     )
                 ok = True
-                pass
             await asyncio.sleep(3.2)
             if debug:
                 print(f"log capture: {str(lc)}")
@@ -61,9 +60,8 @@ class TestIssue279WithSelenium(BaseSeleniumTest):
             for i, expected in enumerate(expecteds):
                 if not ok:
                     self.assertTrue(expected in str(lc), f"{i}:{expected}")
-                else:
-                    if not expected in str(lc):
-                        print(f"{i}:{expected} missing in captured log")
+                elif expected not in str(lc):
+                    print(f"{i}:{expected} missing in captured log")
 
         self.browser.close()
         await self.server.stop()

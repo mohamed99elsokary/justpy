@@ -25,7 +25,13 @@ def generate_data(self, msg):
 def plotly_test(request):
     wp = jp.WebPage()
     wp.numpoints = 500
-    jp.Button(text='Generate New Data', click=generate_data, a=wp, classes=jp.Styles.button_simple + ' m-2 p-2')
+    jp.Button(
+        text='Generate New Data',
+        click=generate_data,
+        a=wp,
+        classes=f'{jp.Styles.button_simple} m-2 p-2',
+    )
+
     wp.c = jp.PlotlyChart(chart=create_chart(wp.numpoints), a=wp, classes='border m-2 p-6', style='width: 600px')
     return wp
 

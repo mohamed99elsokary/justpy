@@ -76,8 +76,7 @@ class TestIssue304(BaseSeleniumTest):
         """
         returns a dataframe with sample data
         """
-        wm_df = pd.read_csv('https://elimintz.github.io/women_majors.csv').round(2)
-        return wm_df
+        return pd.read_csv('https://elimintz.github.io/women_majors.csv').round(2)
 
     @staticmethod
     def row_clicked(self, msg):

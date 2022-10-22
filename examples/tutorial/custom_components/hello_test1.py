@@ -4,7 +4,7 @@ import justpy as jp
 def hello_test1():
     wp = jp.WebPage()
     h = jp.Hello()
-    for i in range(5):
+    for _ in range(5):
         wp.add(h)
     return wp
 

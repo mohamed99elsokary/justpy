@@ -3,15 +3,17 @@ Created on 2022-08-22
 
 @author: wf
 """
+
 import justpy as jp
 import pandas as pd
 
-df_object = {"row1": [], "row2": [], "row3": [], "row4": [], "row5": []}
-df_object["row1"] = [pd.Timestamp(year=2016, month=4, day=8)] * 5
-df_object["row2"] = ["100"] * 5
-df_object["row3"] = [100.345] * 5
-df_object["row4"] = [3] * 5
-df_object["row5"] = [100] * 5
+df_object = {
+    "row1": [pd.Timestamp(year=2016, month=4, day=8)] * 5,
+    "row2": ["100"] * 5,
+    "row3": [100.345] * 5,
+    "row4": [3] * 5,
+    "row5": [100] * 5,
+}
 
 df = pd.DataFrame(df_object)
 msg_div = None

@@ -34,10 +34,7 @@ def row_selected4(self, msg):
     s = f'Selected rows {sorted(list(wp.selected_rows.keys()))}'
     for i in sorted(wp.selected_rows):
         s = f'{s}\n Row {i}  Data: {wp.selected_rows[i]}'
-    if wp.selected_rows:
-        wp.rows_div.text = s
-    else:
-        wp.rows_div.text = 'No row selected'
+    wp.rows_div.text = s if wp.selected_rows else 'No row selected'
 
 
 def grid_test13():

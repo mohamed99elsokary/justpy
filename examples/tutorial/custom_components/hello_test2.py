@@ -3,7 +3,7 @@ import justpy as jp
 
 def hello_test2():
     wp = jp.WebPage()
-    for i in range(5):
+    for _ in range(5):
         wp.add(jp.Hello()) # or jp.Hello(a=wp)
     return wp
 

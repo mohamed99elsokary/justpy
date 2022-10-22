@@ -9,9 +9,7 @@ iris_stats.insert(loc=0, column="stats", value=iris_stats.index)
 iris_species = list(iris["species"].unique())
 
 # Create a dictionary of frames per iris species
-iris_species_frames = {}
-for s in iris_species:
-    iris_species_frames[s] = iris.loc[iris["species"] == s]
+iris_species_frames = {s: iris.loc[iris["species"] == s] for s in iris_species}
 
 
 async def click_point(self, msg):
@@ -69,11 +67,6 @@ def iris_data():
                 o = chart.options
                 o.chart.type = "scatter"
                 o.chart.zoomType = "xy"
-                o.title.text = ""
-                o.legend.enabled = False
-                o.credits.enabled = (
-                    False if i < 3 or j < 3 else True
-                )  # https://api.highcharts.com/highcharts/credits.enabled
                 o.xAxis.title.text = col2 if i == 3 else ""
                 o.yAxis.title.text = col1 if j == 0 else ""
                 o.xAxis.crosshair = o.yAxis.crosshair = True
@@ -92,14 +85,13 @@ def iris_data():
                     classes="flex-grow m-1",
                 )
                 o = chart.options
-                o.title.text = ""
-                o.legend.enabled = False
                 o.xAxis[0].title.text = col2 if i == 3 else ""
                 o.xAxis[1].title.text = ""
                 o.yAxis[0].title.text = col1 if j == 0 else ""
                 o.yAxis[1].title.text = ""
-                o.credits.enabled = False if i < 3 or j < 3 else True
-
+            o.credits.enabled = i >= 3 and j >= 3
+            o.legend.enabled = False
+            o.title.text = ""
     # Add two grids, first with the data and second with statistics describing the data
     iris.jp.ag_grid(
         a=wp,

@@ -52,9 +52,11 @@ def tool_tip_demo2():
     wp = jp.WebPage()
     jp.Div(text='Charts with default Highcharts tooltip', classes='m-2 p-2 text-xl bg-blue-500 text-white',a =wp)
     d = jp.Div(classes='flex flex-wrap ', a=wp)
-    my_charts = []
-    for i in range(3):
-        my_charts.append(jp.HighCharts(a=d, classes='m-2 p-2 border', options=chart_def))
+    my_charts = [
+        jp.HighCharts(a=d, classes='m-2 p-2 border', options=chart_def)
+        for _ in range(3)
+    ]
+
     my_charts[0].options.tooltip.shared = False
     my_charts[1].options.tooltip.shared = True
     my_charts[2].options.tooltip.split = True
@@ -65,9 +67,10 @@ def tool_tip_demo2():
     jp.Div(text='Charts with user defined tooltip formatter functions',
            classes='m-2 p-2 text-xl bg-blue-500 text-white', a=wp)
     d = jp.Div(classes='flex flex-wrap', a=wp)
-    my_charts = []
-    for i in range(3):
-        my_charts.append(jp.HighCharts(a=d, classes='m-2 p-2 border', options=chart_def))
+    my_charts = [
+        jp.HighCharts(a=d, classes='m-2 p-2 border', options=chart_def)
+        for _ in range(3)
+    ]
 
     my_charts[0].options.tooltip.shared = False
     my_charts[1].options.tooltip.shared = True
