@@ -34,7 +34,7 @@ data[DATE_TIME] = pd.to_datetime(data[DATE_TIME])
 
 
 def map_deck(data, lat, lon, zoom):
-    deck = pdk.Deck(
+    return pdk.Deck(
         # https://docs.mapbox.com/help/getting-started/access-tokens/
         api_keys={"mapbox": "Insert your mapbox api token here"},
         map_provider="mapbox",
@@ -58,7 +58,6 @@ def map_deck(data, lat, lon, zoom):
             ),
         ],
     )
-    return deck
 
 
 airports = {
@@ -79,7 +78,7 @@ def create_histogram(hour_selected):
     ]
     hist = np.histogram(filtered[DATE_TIME].dt.minute, bins=60, range=(0, 60))[0]
     chart_data = pd.DataFrame({"minute": range(60), "pickups": hist})
-    chart = (
+    return (
         alt.Chart(chart_data)
         .mark_area(
             interpolate="step-after",
@@ -92,7 +91,6 @@ def create_histogram(hour_selected):
         .configure_mark(opacity=0.5, color="red")
         .properties(width="container", height=200)
     )
-    return chart
 
 
 async def slider_change(self, msg):
@@ -136,7 +134,7 @@ def pydeck_demo(request):
         change=slider_change,
     )
     deck_div = jp.Div(classes="flex ml-2", a=wp)
-    hour_data = data[data[DATE_TIME].dt.hour == int(0)]
+    hour_data = data[data[DATE_TIME].dt.hour == 0]
     deck = map_deck(hour_data, midpoint[0], midpoint[1], zoom_level_main)
     all_div = jp.Div(a=deck_div)
     wp.all_caption = jp.Div(

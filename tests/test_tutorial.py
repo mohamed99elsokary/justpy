@@ -31,13 +31,11 @@ class TestTutorial(Basetest):
         header_missing=0
         html_used=0
         demo_missing=0
-        for i,tutorial in enumerate(tm.tutorials.values()):
-            for j,example in enumerate(tutorial.examples.values()):
-                if example.option is not None:
-                    if debug:
-                        print(f"{tutorial.name} {example.name} option {example.option} used")
-                        pass
-                if not example.name in ds.demos_by_name:
+        for tutorial in tm.tutorials.values():
+            for example in tutorial.examples.values():
+                if example.option is not None and debug:
+                    print(f"{tutorial.name} {example.name} option {example.option} used")
+                if example.name not in ds.demos_by_name:
                     demo_missing+=1
                     if debug:
                         print(f"❌ docs/{tutorial.name} {example.name} - demo missing")
@@ -53,10 +51,12 @@ class TestTutorial(Basetest):
             print(f"{demo_missing} demos missing {header_missing} headers missing {html_used} x html used")
         self.assertEqual(0,header_missing+html_used)
         for demo in ds.demos:
-            if not demo.name in tm.examples_by_name:
-                if demo.example_source.source_type=="tutorial":
-                    if debug:
-                        print(f"❌ {demo.name} not linked to tutorial examples")
+            if (
+                demo.name not in tm.examples_by_name
+                and demo.example_source.source_type == "tutorial"
+                and debug
+            ):
+                print(f"❌ {demo.name} not linked to tutorial examples")
                 
     def test_tutorial_manager(self):
         """

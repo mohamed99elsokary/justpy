@@ -113,7 +113,7 @@ class HighCharts(JustpyBaseComponent):
         ]
         for e in self.allowed_events:
             for prefix in ["", "on", "on_"]:
-                if prefix + e in kwargs.keys():
+                if prefix + e in kwargs:
                     fn = kwargs[prefix + e]
                     if isinstance(fn, str):
                         fn_string = f"def oneliner{self.id}(self, msg):\n {fn}"
@@ -127,18 +127,15 @@ class HighCharts(JustpyBaseComponent):
         if "series" not in self.options:
             self.options.series = []
         for com in ["a", "add_to"]:
-            if com in kwargs.keys():
+            if com in kwargs:
                 kwargs[com].add_component(self)
 
     def __repr__(self):
         return f"{self.__class__.__name__}(id: {self.id}, vue_type: {self.vue_type}, chart options: {self.options})"
 
     def __setattr__(self, key, value):
-        if key == "options":
-            if isinstance(value, str):
-                self.load_json(value)
-            else:
-                super().__setattr__(key, value)
+        if key == "options" and isinstance(value, str):
+            self.load_json(value)
         else:
             super().__setattr__(key, value)
 
@@ -206,24 +203,24 @@ class HighCharts(JustpyBaseComponent):
 
     def convert_object_to_dict(self):
 
-        d = {}
-        d["vue_type"] = self.vue_type
-        d["id"] = self.id
-        d["stock"] = self.stock
-        d["use_cache"] = self.use_cache
-        d["show"] = self.show
-        d["classes"] = self.classes
-        d["style"] = self.style
-        d["event_propagation"] = self.event_propagation
-        d["def"] = self.options
-        d["events"] = self.events
-        d["tooltip_fixed"] = self.tooltip_fixed
-        d["tooltip_x"] = self.tooltip_x
-        d["tooltip_y"] = self.tooltip_y
-        d["tooltip_debounce"] = self.tooltip_debounce
-        d["update_animation"] = self.update_animation
-        d["update_create"] = self.update_create
-        return d
+        return {
+            "vue_type": self.vue_type,
+            "id": self.id,
+            "stock": self.stock,
+            "use_cache": self.use_cache,
+            "show": self.show,
+            "classes": self.classes,
+            "style": self.style,
+            "event_propagation": self.event_propagation,
+            "def": self.options,
+            "events": self.events,
+            "tooltip_fixed": self.tooltip_fixed,
+            "tooltip_x": self.tooltip_x,
+            "tooltip_y": self.tooltip_y,
+            "tooltip_debounce": self.tooltip_debounce,
+            "update_animation": self.update_animation,
+            "update_create": self.update_create,
+        }
 
 
 class HighStock(HighCharts):
@@ -499,15 +496,17 @@ if _has_pydeck:
             super().__init__(**kwargs)
 
         def convert_object_to_dict(self):
-            d = {}
-            d["vue_type"] = self.vue_type
-            d["id"] = self.id
-            d["use_cache"] = self.use_cache
-            d["show"] = self.show
-            d["classes"] = self.classes
-            d["style"] = self.style
-            d["event_propagation"] = self.event_propagation
-            d["deck"] = self.deck.to_json()
+            d = {
+                "vue_type": self.vue_type,
+                "id": self.id,
+                "use_cache": self.use_cache,
+                "show": self.show,
+                "classes": self.classes,
+                "style": self.style,
+                "event_propagation": self.event_propagation,
+                "deck": self.deck.to_json(),
+            }
+
             d["events"] = self.events
             d["mapbox_key"] = self.deck.mapbox_key
             return d
@@ -536,18 +535,19 @@ if _has_altair:
             super().__init__(**kwargs)
 
         def convert_object_to_dict(self):
-            d = {}
-            d["vue_type"] = self.vue_type
-            d["id"] = self.id
-            d["use_cache"] = self.use_cache
-            d["show"] = self.show
-            d["classes"] = self.classes
-            d["style"] = self.style
-            d["event_propagation"] = self.event_propagation
-            if self.vega_source:
-                d["vega_source"] = json.dumps(self.vega_source)
-            else:
-                d["vega_source"] = self.chart.to_json()
+            d = {
+                "vue_type": self.vue_type,
+                "id": self.id,
+                "use_cache": self.use_cache,
+                "show": self.show,
+                "classes": self.classes,
+                "style": self.style,
+                "event_propagation": self.event_propagation,
+                "vega_source": json.dumps(self.vega_source)
+                if self.vega_source
+                else self.chart.to_json(),
+            }
+
             d["events"] = self.events
             d["options"] = self.options
             return d
@@ -575,18 +575,17 @@ if _has_plotly:
             super().__init__(**kwargs)
 
         def convert_object_to_dict(self):
-            d = {}
-            d["vue_type"] = self.vue_type
-            d["id"] = self.id
-            d["use_cache"] = self.use_cache
-            d["show"] = self.show
-            d["classes"] = self.classes
-            d["style"] = self.style
-            d["event_propagation"] = self.event_propagation
-            if self.chart:
-                d["chart"] = self.chart.to_json()
-            else:
-                d["chart"] = self.chart_dict
+            d = {
+                "vue_type": self.vue_type,
+                "id": self.id,
+                "use_cache": self.use_cache,
+                "show": self.show,
+                "classes": self.classes,
+                "style": self.style,
+                "event_propagation": self.event_propagation,
+                "chart": self.chart.to_json() if self.chart else self.chart_dict,
+            }
+
             d["events"] = self.events
             d["config"] = self.config
             return d
@@ -614,18 +613,19 @@ if _has_bokeh:
             super().__init__(**kwargs)
 
         def convert_object_to_dict(self):
-            d = {}
-            d["vue_type"] = self.vue_type
-            d["id"] = self.id
-            d["use_cache"] = self.use_cache
-            d["show"] = self.show
-            d["classes"] = self.classes
-            d["style"] = self.style
-            d["event_propagation"] = self.event_propagation
-            if self.chart:
-                d["chart"] = json.dumps(bokeh.embed.standalone.json_item(self.chart))
-            else:
-                d["chart"] = self.chart_dict
+            d = {
+                "vue_type": self.vue_type,
+                "id": self.id,
+                "use_cache": self.use_cache,
+                "show": self.show,
+                "classes": self.classes,
+                "style": self.style,
+                "event_propagation": self.event_propagation,
+                "chart": json.dumps(bokeh.embed.standalone.json_item(self.chart))
+                if self.chart
+                else self.chart_dict,
+            }
+
             d["events"] = self.events
             d["config"] = self.config
             return d
@@ -651,5 +651,4 @@ if _has_folium:
         def convert_object_to_dict(self):
             if self.chart:
                 self.inner_html = self.chart._repr_html_()
-            d = super().convert_object_to_dict()
-            return d
+            return super().convert_object_to_dict()

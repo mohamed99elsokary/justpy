@@ -44,9 +44,12 @@ def create_component_file_list():
     file_list = []
     component_dir = os.path.join(STATIC_DIRECTORY, "components")
     if os.path.isdir(component_dir):
-        for file in os.listdir(component_dir):
-            if fnmatch.fnmatch(file, "*.js"):
-                file_list.append(f"/components/{file}")
+        file_list.extend(
+            f"/components/{file}"
+            for file in os.listdir(component_dir)
+            if fnmatch.fnmatch(file, "*.js")
+        )
+
     return file_list
 
 
@@ -124,16 +127,15 @@ async def handle_event(data_dict, com_type=0, page_event=False):
     except:
         pass
     try:
-        if c is not None:
-            if hasattr(c, "on_" + event_data["event_type"]):
-                event_result = await c.run_event_function(
-                    event_data["event_type"], event_data, True
-                )
-            else:
-                event_result = None
-                logging.debug(f"{c} has no {event_data['event_type']} event handler")
+        if c is None:
+            event_result = None
+        elif hasattr(c, "on_" + event_data["event_type"]):
+            event_result = await c.run_event_function(
+                event_data["event_type"], event_data, True
+            )
         else:
             event_result = None
+            logging.debug(f"{c} has no {event_data['event_type']} event handler")
         logging.debug(f"Event result:{event_result}")
     except Exception as e:
         # raise Exception(e)
@@ -163,7 +165,7 @@ async def handle_event(data_dict, com_type=0, page_event=False):
     except:
         pass
     if com_type == 1 and event_result is None:
-        dict_to_send = {
+        return {
             "type": "page_update",
             "data": build_list,
             "page_options": {
@@ -174,7 +176,6 @@ async def handle_event(data_dict, com_type=0, page_event=False):
                 "favicon": p.favicon,
             },
         }
-        return dict_to_send
 
 # https://stackoverflow.com/questions/57412825/how-to-start-a-uvicorn-fastapi-in-background-when-testing-with-pytest
 # https://github.com/encode/uvicorn/discussions/1103
@@ -291,7 +292,7 @@ class JustpyApp(Starlette):
         # parameter in the funcResponse later when applied 
         return funcResponse
 
-    async def get_page_for_func(self, request, func:typing.Callable)->WebPage:
+    async def get_page_for_func(self, request, func:typing.Callable) -> WebPage:
         """
         get the Webpage for the given func
 
@@ -308,16 +309,16 @@ class JustpyApp(Starlette):
         func_parameters = len(inspect.signature(func_to_run).parameters)
         assert (func_parameters < 2), f"Function {func_to_run.__name__} cannot have more than one parameter"
         if inspect.iscoroutinefunction(func_to_run):
-            if func_parameters == 1:
-                load_page = await func_to_run(request)
-            else:
-                load_page = await func_to_run()
+            return (
+                await func_to_run(request)
+                if func_parameters == 1
+                else await func_to_run()
+            )
+
+        elif func_parameters == 1:
+            return func_to_run(request)
         else:
-            if func_parameters == 1:
-                load_page = func_to_run(request)
-            else:
-                load_page = func_to_run()
-        return load_page
+            return func_to_run()
 
     def get_response_for_load_page(self,request,load_page):
         """
@@ -352,12 +353,10 @@ class JustpyApp(Starlette):
             "highcharts_theme": load_page.highcharts_theme,
             "debug": load_page.debug,
             "events": load_page.events,
-            "favicon": load_page.favicon if load_page.favicon else FAVICON,
+            "favicon": load_page.favicon or FAVICON,
         }
-        if load_page.use_cache:
-            page_dict = load_page.cache
-        else:
-            page_dict = load_page.build_list()
+
+        page_dict = load_page.cache if load_page.use_cache else load_page.build_list()
         template_options["tailwind"] = load_page.tailwind
         context = {
             "request": request,
@@ -373,8 +372,7 @@ class JustpyApp(Starlette):
         # wrap the context in a context object to make it available
         context_obj = Context(context)
         context["context_obj"] = context_obj
-        response = templates.TemplateResponse(load_page.template_file, context)
-        return response
+        return templates.TemplateResponse(load_page.template_file, context)
     
     def handle_session_cookie(self,request) -> typing.Union[bool, Response]:
         """
@@ -456,17 +454,16 @@ class JustpyAjaxEndpoint(HTTPEndpoint):
         # data_dict['event_data']['session'] = request.session
         msg_type = data_dict["type"]
         data_dict["event_data"]["msg_type"] = msg_type
-        page_event = True if msg_type == "page_event" else False
+        page_event = msg_type == "page_event"
         result = await handle_event(data_dict, com_type=1, page_event=page_event)
-        if result:
-            if LATENCY:
-                await asyncio.sleep(LATENCY / 1000)
-            return JSONResponse(result)
-        else:
+        if not result:
             return JSONResponse(False)
+        if LATENCY:
+            await asyncio.sleep(LATENCY / 1000)
+        return JSONResponse(result)
 
     async def on_disconnect(self, page_id):
-        logging.debug(f"In disconnect Homepage")
+        logging.debug("In disconnect Homepage")
         await WebPage.instances[
             page_id
         ].on_disconnect()  # Run the specific page disconnect function
@@ -510,10 +507,7 @@ class JustpyServer:
         self.proc = None
         self.thread = None
         if mode is None:
-            if platform == "darwin":
-                mode = "direct"
-            else:
-                mode = "process"
+            mode = "direct" if platform == "darwin" else "process"
         self.mode = mode
         self.debug = debug
         self.running = False
@@ -549,7 +543,7 @@ class JustpyServer:
                 "port": self.port,
                 "start_server": True,
             }
-            kwargs = {**needed_kwargs, **kwargs}
+            kwargs = needed_kwargs | kwargs
             self.proc = Process(
                 target=jp.justpy,
                 args=(wpfunc,),
@@ -588,14 +582,13 @@ class JustpyServer:
         """
         get another similar server with the port number incremented by one
         """
-        next_server = JustpyServer(
+        return JustpyServer(
             port=self.port + 1,
             host=self.host,
             sleep_time=self.sleep_time,
             mode=self.mode,
             debug=self.debug,
         )
-        return next_server
 
     def get_url(self, path):
         """
@@ -607,5 +600,4 @@ class JustpyServer:
             str: the url for the path
 
         """
-        url = f"http://{self.host}:{self.port}{path}"
-        return url
+        return f"http://{self.host}:{self.port}{path}"

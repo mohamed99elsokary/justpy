@@ -18,10 +18,7 @@ class Products(jp.Div):
         self.total_inventory = jp.H2(text='Totals', a=self)
 
     def total_products(self):
-        total = 0
-        for product in self.products:
-            total += product["quantity"]
-        return total
+        return sum(product["quantity"] for product in self.products)
 
     def react2(self, data):
         self.ul.delete_components()

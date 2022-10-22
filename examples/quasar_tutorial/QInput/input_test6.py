@@ -10,7 +10,7 @@ def input_test6(request):
     for slot in ['append', 'prepend', 'before']:
         in1 = jp.QInput(label=slot, filled=True, hint=f'Icon is in slot "{slot}" and "after"', a=c2, after_slot=icon2)
         #in1.after_slot = icon2    # Alternative to keyword method used in line above
-        setattr(in1, slot + '_slot', icon1)
+        setattr(in1, f'{slot}_slot', icon1)
     return wp
 
 # initialize the demo

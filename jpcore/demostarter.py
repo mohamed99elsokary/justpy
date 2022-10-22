@@ -50,9 +50,8 @@ class Demostarter:
                 self.demos.append(demo)
                 self.demos_by_name[demo.name]=demo
                 self.demos_by_source_file[demo.source_file]=demo
-            else:
-                if self.debug:
-                    print(f"{pymodule_file} is not a demo")
+            elif self.debug:
+                print(f"{pymodule_file} is not a demo")
         self.add_video_links()
         if self.debug:
             print(f"found {len(self.demos)} justpy demo python modules")
@@ -67,17 +66,15 @@ class Demostarter:
                 for i,video_record in enumerate(example_json["examples"]):
                     name=video_record.get("name",None)
                     video_url=video_record.get("video_url",None)
-                    if name and video_url:
-                        if name in self.demos_by_source_file:
-                            demo=self.demos_by_source_file[name]
-                            demo.video_url=video_url
-                        elif name in self.demos_by_name:
-                            demo=self.demos_by_name[name]
-                            demo.video_url=video_url
-                    else:
+                    if not name or not video_url:
                         raise Exception(f"name or url missing for example #{i}")
-                    
-            pass
+
+                    if name in self.demos_by_source_file:
+                        demo=self.demos_by_source_file[name]
+                        demo.video_url=video_url
+                    elif name in self.demos_by_name:
+                        demo=self.demos_by_name[name]
+                        demo.video_url=video_url
         
             
     def as_list_of_dicts(self)->list:
@@ -133,9 +130,6 @@ class Demostarter:
                 break
         server=jp.get_server()
         server.run()
-        #if use_gather:
-        #    demo_results = await asyncio.gather(*tasklist, return_exceptions=True)
-        pass
 
     async def stop(self):
         """
@@ -147,7 +141,7 @@ class Demostarter:
             await server.stop()
             self.servers.pop(server.port)
 
-def main(argv=None):  # IGNORE:C0111
+def main(argv=None):    # IGNORE:C0111
     """main program."""
 
     if argv is None:
@@ -189,8 +183,8 @@ def main(argv=None):  # IGNORE:C0111
         demostarter.start(limit=args.limit)
     except Exception as e:
         indent = len(program_name) * " "
-        sys.stderr.write(program_name + ": " + repr(e) + "\n")
-        sys.stderr.write(indent + "  for help use --help")
+        sys.stderr.write(f"{program_name}: {repr(e)}" + "\n")
+        sys.stderr.write(f"{indent}  for help use --help")
         if args.debug:
             print(traceback.format_exc())
         return 2

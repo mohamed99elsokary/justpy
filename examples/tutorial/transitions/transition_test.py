@@ -23,13 +23,19 @@ def transition_test():
     tran.leave_end = 'opacity-0 transform scale-0'
     div_list = []
     flex_div = jp.Div(classes='flex flex-wrap', a=wp)
-    for i in range(10):
+    for _ in range(10):
         d = jp.Div(a=flex_div, text='hello', style='height: 150px; width:200px')
         jp.Pre(text=' test', a=d)
         d.transition = tran
         d.classes = 'border text-xl m-2 h-16 w-16 bg-blue-500'
         div_list.append(d)
-    b = jp.Button(text='Click here', classes=jp.Styles.button_simple + ' m-2', a=wp, click=toggle_hidden)
+    b = jp.Button(
+        text='Click here',
+        classes=f'{jp.Styles.button_simple} m-2',
+        a=wp,
+        click=toggle_hidden,
+    )
+
     b.div_list = div_list
     return wp
 

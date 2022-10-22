@@ -41,7 +41,7 @@ class Calculator(Div):
             calc.tape.value = str(tape_value)
         else:
             if calc.tape.value[-1] in '*+-/' or self.text in '*+-/':
-                calc.tape.value += ' ' + self.text
+                calc.tape.value += f' {self.text}'
             else:
                 calc.tape.value += self.text
             try:
@@ -52,15 +52,14 @@ class Calculator(Div):
                     changed = True
             except:
                 pass
-        if changed:
-            if calc.has_event_function('change'):
-                calc_msg = msg
-                calc_msg.event_type = 'change'
-                calc_msg.id = calc.id
-                calc_msg.button_text = self.text
-                calc_msg.value = calc.value
-                calc_msg.class_name = calc.__class__.__name__
-                return await calc.run_event_function('change', calc_msg)
+        if changed and calc.has_event_function('change'):
+            calc_msg = msg
+            calc_msg.event_type = 'change'
+            calc_msg.id = calc.id
+            calc_msg.button_text = self.text
+            calc_msg.value = calc.value
+            calc_msg.class_name = calc.__class__.__name__
+            return await calc.run_event_function('change', calc_msg)
 
 
 def calc_change(self, msg):

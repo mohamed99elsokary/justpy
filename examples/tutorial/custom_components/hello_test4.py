@@ -10,7 +10,7 @@ class MyHello(jp.Hello):
 
 def hello_test4():
     wp = jp.WebPage()
-    for i in range(5):
+    for _ in range(5):
         MyHello(a=wp, counter=100)
     return wp
 

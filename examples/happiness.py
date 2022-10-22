@@ -27,10 +27,10 @@ def stack_change(self, msg):
 
 
 def series_change(self, msg):
-    msg.page.cols_to_plot = []
-    for i, toggle in enumerate(msg.page.toggle_list):
-        if toggle.value:
-            msg.page.cols_to_plot.append(i + 3)
+    msg.page.cols_to_plot = [
+        i + 3 for i, toggle in enumerate(msg.page.toggle_list) if toggle.value
+    ]
+
     c = msg.page.df.jp.plot(
         "Country",
         msg.page.cols_to_plot,
@@ -91,18 +91,19 @@ def happiness_plot(request):
     corr_button = jp.QBtn(
         label="Show pairwise correlation", a=d, click=corr_button_click
     )
-    for i in df.columns[3:]:
-        wp.toggle_list.append(
-            jp.QToggle(
-                checked_icon="check",
-                color="green",
-                unchecked_icon="clear",
-                value=True,
-                label=f"{i}",
-                a=d,
-                input=series_change,
-            )
-        )  # ,style='margin-right: 10px',
+    wp.toggle_list.extend(
+        jp.QToggle(
+            checked_icon="check",
+            color="green",
+            unchecked_icon="clear",
+            value=True,
+            label=f"{i}",
+            a=d,
+            input=series_change,
+        )
+        for i in df.columns[3:]
+    )
+
     chart = df.jp.plot(
         "Country",
         wp.cols_to_plot,
@@ -178,10 +179,11 @@ def create_corr_page():
             o.tooltip.pointFormat = f"{{point.country}}<br/></b>{x_col}: <b>{{point.x}}</b><br/></b>{y_col}: <b>{{point.y}}</b><br/>"
             o.tooltip.useHtml = True
             o.series[0].name = f"{x_col} vs. {y_col}"
-            data = []
-            # Make the first series data a dictionary so that the country name  will be available to the tooltip
-            for i, point in enumerate(o.series[0].data):
-                data.append({"x": point[0], "y": point[1], "country": df["Country"][i]})
+            data = [
+                {"x": point[0], "y": point[1], "country": df["Country"][i]}
+                for i, point in enumerate(o.series[0].data)
+            ]
+
             o.series[0].data = data
     corr_def = (
         df[

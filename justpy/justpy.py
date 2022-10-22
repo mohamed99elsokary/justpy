@@ -137,7 +137,7 @@ class JustpyEvents(WebSocketEndpoint):
             else:
                 WebPage.sockets[page_key] = {websocket.id: websocket}
             return
-        if msg_type == "event" or msg_type == "page_event":
+        if msg_type in ["event", "page_event"]:
             # Message sent when an event occurs in the browser
             session_cookie = websocket.cookies.get(SESSION_COOKIE_NAME)
             if SESSIONS and session_cookie:
@@ -145,7 +145,7 @@ class JustpyEvents(WebSocketEndpoint):
                 data_dict["event_data"]["session_id"] = session_id
             # await self._event(data_dict)
             data_dict["event_data"]["msg_type"] = msg_type
-            page_event = True if msg_type == "page_event" else False
+            page_event = msg_type == "page_event"
             WebPage.loop.create_task(
                 handle_event(data_dict, com_type=0, page_event=page_event)
             )
@@ -235,16 +235,10 @@ def justpy(
 
     HOST = host
     PORT = port
-    if func:
-        func_to_run = func
-    else:
-        func_to_run = initial_func
+    func_to_run = func or initial_func
     if startup:
         startup_func = startup
-    if websockets:
-        WebPage.use_websockets = True
-    else:
-        WebPage.use_websockets = False
+    WebPage.use_websockets = websockets
     app.add_jproute("/", func_to_run)
     for k, v in kwargs.items():
         template_options[k.lower()] = v

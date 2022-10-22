@@ -43,10 +43,7 @@ class Tabs(Div):
             self.value = id
 
     def get_tab_by_id(self, id):
-        for tab in self.tabs:
-            if tab['id'] == id:
-                return tab
-        return None
+        return next((tab for tab in self.tabs if tab['id'] == id), None)
 
     def set_content_div(self, tab):
         self.content_div.add(tab['content'])
@@ -91,21 +88,20 @@ class Tabs(Div):
 
     @staticmethod
     async def tab_click(self, msg):
-        if self.tabs.value != self.tab_id:
-            previous_tab = self.tabs.value
-            self.tabs.value = self.tab_id
-            if hasattr(self.tabs, 'model'):
-                self.tabs.model[0].data[self.tabs.model[1]] = self.tabs.value
-            # Run change if it exists
-            if self.tabs.has_event_function('change'):
-                msg.previous_tab = previous_tab
-                msg.new_tab = self.tabs.value
-                msg.id = self.tabs.id
-                msg.value = self.tabs.value
-                msg.class_name = self.tabs.__class__.__name__
-                return await self.tabs.run_event_function('change', msg)
-        else:
+        if self.tabs.value == self.tab_id:
             return True  # No need to update page
+        previous_tab = self.tabs.value
+        self.tabs.value = self.tab_id
+        if hasattr(self.tabs, 'model'):
+            self.tabs.model[0].data[self.tabs.model[1]] = self.tabs.value
+        # Run change if it exists
+        if self.tabs.has_event_function('change'):
+            msg.previous_tab = previous_tab
+            msg.new_tab = self.tabs.value
+            msg.id = self.tabs.id
+            msg.value = self.tabs.value
+            msg.class_name = self.tabs.__class__.__name__
+            return await self.tabs.run_event_function('change', msg)
 
     def convert_object_to_dict(self):
         if hasattr(self, 'model'):
@@ -130,9 +126,7 @@ class Tabs(Div):
             li_item.tabs = self
             li_item.on('click', self.tab_click)
         self.last_rendered_value = self.value
-        d = super().convert_object_to_dict()
-
-        return d
+        return super().convert_object_to_dict()
 
 
 class TabsPills(Tabs):

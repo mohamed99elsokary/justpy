@@ -41,19 +41,16 @@ class BaseWebPage():
         """
         self.errors.inner_html=msg_html
         
-    def get_html_error(self,ex)->str:
+    def get_html_error(self,ex) -> str:
         """
         get the html error message for the given exception
         """
         error_msg=str(ex)
-        trace=""
-        if self.debug:
-            trace=traceback.format_exc()
+        trace = traceback.format_exc() if self.debug else ""
         if self.debug:
             print(error_msg)
             print(trace)
-        error_msg_html=f"❌{error_msg}<pre>{trace}</pre>"
-        return error_msg_html
+        return f"❌{error_msg}<pre>{trace}</pre>"
       
     def handleException(self,ex):
         '''
@@ -151,10 +148,7 @@ class DemoDisplay(BaseWebPage):
         self.example_source_link = jp.Div(a=self.demo_description)
         self.example_source_link.inner_html=example_source.img_link
         self.demo_desc = jp.QDiv(a=self.demo_description, classes="centered")
-        self.demo_desc.inner_html=self.demo.source_link 
-        if self.example:
-            # special handling for tutorial code
-            pass
+        self.demo_desc.inner_html=self.demo.source_link
         self.sourceFrame=jp.QDiv(a=self.container, classes="row")
         # display code
         self.source_code_div=jp.QDiv(a=self.sourceFrame, classes="col-6")
@@ -237,29 +231,26 @@ class DemoBrowser(BaseWebPage):
         self.mounted={}
         self.page_load_count=0
         
-    def optionalDebug(self,args):   
+    def optionalDebug(self,args):
         '''
         start the remote debugger if the arguments specify so
         
         Args:
             args(): The command line arguments
         '''
-        if args.debugServer:
-            import pydevd
-            print (args.debugPathMapping,flush=True)
-            if args.debugPathMapping:
-                if len(args.debugPathMapping)==2:
-                    remotePath=args.debugPathMapping[0] # path on the remote debugger side
-                    localPath=args.debugPathMapping[1]  # path on the local machine where the code runs
-                    MY_PATHS_FROM_ECLIPSE_TO_PYTHON = [
-                        (remotePath, localPath),
-                    ]
-                    setup_client_server_paths(MY_PATHS_FROM_ECLIPSE_TO_PYTHON)
-                    #os.environ["PATHS_FROM_ECLIPSE_TO_PYTHON"]='[["%s", "%s"]]' % (remotePath,localPath)
-                    #print("trying to debug with PATHS_FROM_ECLIPSE_TO_PYTHON=%s" % os.environ["PATHS_FROM_ECLIPSE_TO_PYTHON"]);
-         
-            pydevd.settrace(args.debugServer, port=args.debugPort,stdoutToServer=True, stderrToServer=True)
-            print("command line args are: %s" % str(sys.argv))
+        if not args.debugServer:
+            return
+        import pydevd
+        print (args.debugPathMapping,flush=True)
+        if args.debugPathMapping and len(args.debugPathMapping) == 2:
+            remotePath=args.debugPathMapping[0] # path on the remote debugger side
+            localPath=args.debugPathMapping[1]  # path on the local machine where the code runs
+            MY_PATHS_FROM_ECLIPSE_TO_PYTHON = [
+                (remotePath, localPath),
+            ]
+            setup_client_server_paths(MY_PATHS_FROM_ECLIPSE_TO_PYTHON)
+        pydevd.settrace(args.debugServer, port=args.debugPort,stdoutToServer=True, stderrToServer=True)
+        print(f"command line args are: {str(sys.argv)}")
         
     async def onSizeColumnsToFit(self,_msg:dict):   
         """
@@ -272,7 +263,7 @@ class DemoBrowser(BaseWebPage):
         except Exception as ex:
             self.handleException(ex)
             
-    async def onPageReady(self,_msg:dict):   
+    async def onPageReady(self,_msg:dict):
         """
         react on page_ready event
         """
@@ -290,11 +281,10 @@ class DemoBrowser(BaseWebPage):
                     ):
                     demo=self.demo_starter.demos_by_name[demo_name]
                     await self.add_demo(demo,i+1)
-                pass
             else:
-                for i,demo in enumerate(self.mounted.values()):
+                for demo in self.mounted.values():
                     await self.add_demo_tolist(demo)
-                    
+
             self.page_load_count+=1
             self.footer.text=f"{len(self.mounted)} apps mounted {self.page_load_count} page loads"
         except Exception as ex:
@@ -339,13 +329,13 @@ class DemoBrowser(BaseWebPage):
         list_item.name = demo.name
         list_item.video_url = demo.video_url
         self.video_list.add_component(list_item,0)
-        
+
         def delete_list_item(btn, _msg):
             """
             delete a list item
             """
             btn.video_list.remove(btn.list_item)
-            pass
+
         list_item.name_dict["delete"].on("click", delete_list_item)
         
     def web_page(self):
@@ -364,7 +354,7 @@ class DemoBrowser(BaseWebPage):
         try:
             self.video_list=self.bp.name_dict["thumbnail_list"]
             self.mount_all_btn=QBtn(label="Mount all",a=self.toolbar,classes="q-mr-sm",click=self.on_mount_all_btn_click)
-            
+
             self.video_size=512
             icon_size=32
             style='height: 90vh; width: 99%; margin: 0.25rem; padding: 0.25rem;'
@@ -399,11 +389,10 @@ class DemoBrowser(BaseWebPage):
         self.columnDefs= []
         if len(self.lod)>0:
             first=self.lod[0]
-            for key in first.keys():
-                self.columnDefs.append({
-                    'headerName': key, 
-                    'field': key}
-                )
+            self.columnDefs.extend(
+                {'headerName': key, 'field': key} for key in first.keys()
+            )
+
         #self.columnDefs= [
         #        {'headerName': 'Name', 'field': 'name'},
         #        {'headerName': 'Age', 'field': 'age'},
@@ -471,7 +460,7 @@ class DemoBrowser(BaseWebPage):
         self.showError("no example demo name specified")
         
 
-def main(argv=None):  # IGNORE:C0111
+def main(argv=None):    # IGNORE:C0111
     """main program."""
 
     if argv is None:
@@ -499,7 +488,7 @@ def main(argv=None):  # IGNORE:C0111
         parser.add_argument('--debugPort',type=int,
                                      help="remote debug Port",default=5678)
         parser.add_argument('--debugPathMapping',nargs='+',help="remote debug Server path mapping - needs two arguments 1st: remotePath 2nd: local Path")
-   
+
         parser.add_argument("--host", default=socket.getfqdn())
         parser.add_argument("--port", type=int, default=8000)
         args = parser.parse_args(argv[1:])
@@ -511,8 +500,8 @@ def main(argv=None):  # IGNORE:C0111
         jp.justpy(demo_browser.web_page,host=args.host, port=args.port,PLOTLY=True,KATEX=True,VEGA=True)
     except Exception as e:
         indent = len(program_name) * " "
-        sys.stderr.write(program_name + ": " + repr(e) + "\n")
-        sys.stderr.write(indent + "  for help use --help")
+        sys.stderr.write(f"{program_name}: {repr(e)}" + "\n")
+        sys.stderr.write(f"{indent}  for help use --help")
         if args.debug:
             print(traceback.format_exc())
         return 2    

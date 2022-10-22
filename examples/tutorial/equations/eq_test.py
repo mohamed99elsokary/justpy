@@ -27,8 +27,9 @@ def eq_test(request):
         text="Modify Equation",
         click=button_click,
         a=wp,
-        classes=jp.Styles.button_simple + " m-2 p-2",
+        classes=f"{jp.Styles.button_simple} m-2 p-2",
     )
+
     wp.eq1 = jp.Equation(
         equation="c = \\pm\\sqrt{a^2 + b^2 + c^2}", classes="text-3xl m-2 p-2", a=wp
     )

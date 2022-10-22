@@ -7,7 +7,12 @@ def link_demo2():
     # jp.Br(a=wp)
     for i in range(50):
         jp.P(text=f'{i+1} Not a target', classes='m-1 p-1 text-white bg-blue-300', a=wp)
-    target = jp.A(text=f'This is the target - it is linked to first link, click to jump there', classes='inline-block m-1 p-1 text-white bg-red-500', a=wp)
+    target = jp.A(
+        text='This is the target - it is linked to first link, click to jump there',
+        classes='inline-block m-1 p-1 text-white bg-red-500',
+        a=wp,
+    )
+
     link.bookmark = target
     link.scroll = True
     target.bookmark = link

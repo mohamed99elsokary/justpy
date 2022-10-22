@@ -16,7 +16,7 @@ class TestIssue578():
         """
         constructor
         """
-        if len(data_frames)<1:
+        if not data_frames:
             raise Exception("There needs to be at least one data frame")
         self.data_frames=data_frames
         self.data_frame_index=0

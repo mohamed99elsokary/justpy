@@ -24,13 +24,11 @@ async def row_selected(self, msg):
 
 def manipulate_row_data(irow, icol, col_key, val):
     if isinstance(val, uuid.UUID):
-        new_val = str(val)
+        return str(val)
     elif isinstance(val, pd.Timestamp):
-        new_val = val.timestamp()  # convert to POSIX epoch seconds (float)
+        return val.timestamp()
     else:
-        new_val = val
-    # print(irow, icol, col_key, new_val)
-    return new_val
+        return val
 
 def grid_test_issue500():
     wp = jp.WebPage()

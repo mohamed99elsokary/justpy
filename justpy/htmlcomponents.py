@@ -116,13 +116,13 @@ class JustpyBaseComponent(Component):
             self.__setattr__(k, v)
         self.set_keyword_events(**kwargs)
         for com in ["a", "add_to"]:
-            if com in kwargs.keys():
+            if com in kwargs:
                 kwargs[com].add_component(self)
 
     def set_keyword_events(self, **kwargs):
         for e in self.allowed_events:
             for prefix in ["", "on", "on_"]:
-                if prefix + e in kwargs.keys():
+                if prefix + e in kwargs:
                     cls = JustpyBaseComponent
                     if not self.id:
                         self.id = cls.next_id
@@ -137,10 +137,9 @@ class JustpyBaseComponent(Component):
                     break
 
     def delete(self):
-        if self.needs_deletion:
-            if self.delete_flag:
-                JustpyBaseComponent.instances.pop(self.id, None)
-                self.needs_deletion = False
+        if self.needs_deletion and self.delete_flag:
+            JustpyBaseComponent.instances.pop(self.id, None)
+            self.needs_deletion = False
 
     def on(
         self,
@@ -151,42 +150,38 @@ class JustpyBaseComponent(Component):
         throttle=None,
         immediate=False,
     ):
-        if event_type in self.allowed_events:
-            cls = JustpyBaseComponent
-            if not self.id:
-                self.id = cls.next_id
-                cls.next_id += 1
-            cls.instances[self.id] = self
-            self.needs_deletion = True
-            if inspect.ismethod(func):
-                setattr(self, "on_" + event_type, func)
-            else:
-                setattr(self, "on_" + event_type, MethodType(func, self))
-            if event_type not in self.events:
-                self.events.append(event_type)
-            if debounce:
-                self.event_modifiers[event_type].debounce = {
-                    "value": debounce,
-                    "timeout": None,
-                    "immediate": immediate,
-                }
-            elif throttle:
-                self.event_modifiers[event_type].throttle = {
-                    "value": throttle,
-                    "timeout": None,
-                }
-        else:
+        if event_type not in self.allowed_events:
             raise Exception(f"No event of type {event_type} supported")
+        cls = JustpyBaseComponent
+        if not self.id:
+            self.id = cls.next_id
+            cls.next_id += 1
+        cls.instances[self.id] = self
+        self.needs_deletion = True
+        if inspect.ismethod(func):
+            setattr(self, f"on_{event_type}", func)
+        else:
+            setattr(self, f"on_{event_type}", MethodType(func, self))
+        if event_type not in self.events:
+            self.events.append(event_type)
+        if debounce:
+            self.event_modifiers[event_type].debounce = {
+                "value": debounce,
+                "timeout": None,
+                "immediate": immediate,
+            }
+        elif throttle:
+            self.event_modifiers[event_type].throttle = {
+                "value": throttle,
+                "timeout": None,
+            }
 
     def remove_event(self, event_type):
         if event_type in self.events:
             self.events.remove(event_type)
 
     def has_event_function(self, event_type):
-        if getattr(self, "on_" + event_type, None):
-            return True
-        else:
-            return False
+        return bool(getattr(self, f"on_{event_type}", None))
 
     def has_class(self, class_name):
         return class_name in self.classes.split()
@@ -264,25 +259,22 @@ class JustpyBaseComponent(Component):
                 self.model[0][self.model[1]] = value
 
     def get_model(self):
-        if len(self.model) == 2:
-            model_value = self.model[0].data[self.model[1]]
-        else:
-            model_value = self.model[0][self.model[1]]
-        return model_value
+        return (
+            self.model[0].data[self.model[1]]
+            if len(self.model) == 2
+            else self.model[0][self.model[1]]
+        )
 
     async def run_event_function(
         self, event_type, event_data, create_namespace_flag=True
     ):
-        event_function = getattr(self, "on_" + event_type)
-        if create_namespace_flag:
-            function_data = Dict(event_data)
-        else:
-            function_data = event_data
-        if inspect.iscoroutinefunction(event_function):
-            event_result = await event_function(function_data)
-        else:
-            event_result = event_function(function_data)
-        return event_result
+        event_function = getattr(self, f"on_{event_type}")
+        function_data = Dict(event_data) if create_namespace_flag else event_data
+        return (
+            await event_function(function_data)
+            if inspect.iscoroutinefunction(event_function)
+            else event_function(function_data)
+        )
 
     @staticmethod
     def convert_dict_to_object(d):
@@ -420,10 +412,7 @@ class HTMLBaseComponent(JustpyBaseComponent):
         self.initialize(**kwargs)
 
     def __len__(self):
-        if hasattr(self, "components"):
-            return len(self.components)
-        else:
-            return 0
+        return len(self.components) if hasattr(self, "components") else 0
 
     def __repr__(self):
         name = self.name if hasattr(self, "name") else "No name"
@@ -451,38 +440,28 @@ class HTMLBaseComponent(JustpyBaseComponent):
 
     def to_html(self, indent=0, indent_step=0, format=True):
         block_indent = " " * indent
-        if format:
-            ws = "\n"
-        else:
-            ws = ""
+        ws = "\n" if format else ""
         s = f"{block_indent}<{self.html_tag} "
         d = self.convert_object_to_dict()
         for attr, value in d["attrs"].items():
             if value:
                 s = f'{s}{attr}="{value}" '
-        if self.classes:
-            s = f'{s}class="{self.classes}"/>{ws}'
-        else:
-            s = f"{s}/>{ws}"
+        s = f'{s}class="{self.classes}"/>{ws}' if self.classes else f"{s}/>{ws}"
         return s
 
     def react(self, data):
         return
 
     def convert_object_to_dict(self):
-        d = {}
         # Add id if CSS transition is defined
         if self.transition:
             self.check_transition()
-        if self.id:
-            d["attrs"] = {"id": str(self.id)}
-        else:
-            d["attrs"] = {}
+        d = {"attrs": {"id": str(self.id)} if self.id else {}}
         for attr in HTMLBaseComponent.attribute_list:
             d[attr] = getattr(self, attr)
         d["directives"] = {}
         for i in self.directives:
-            if i[0:2] == "v-":  # It is a directive
+            if i[:2] == "v-":  # It is a directive
                 try:
                     d["directives"][i[2:]] = getattr(self, i.replace("-", "_"))
                 except:
@@ -496,7 +475,7 @@ class HTMLBaseComponent(JustpyBaseComponent):
                 pass
             if i in ["in", "from"]:  # Attributes that are also python reserved words
                 try:
-                    d["attrs"][i] = getattr(self, "_" + i)
+                    d["attrs"][i] = getattr(self, f"_{i}")
                 except:
                     pass
             if "-" in i:
@@ -609,10 +588,7 @@ class Div(HTMLBaseComponent):
 
     def to_html(self, indent=0, indent_step=0, format=True):
         block_indent = " " * indent
-        if format:
-            ws = "\n"
-        else:
-            ws = ""
+        ws = "\n" if format else ""
         s = f"{block_indent}<{self.html_tag} "
         d = self.convert_object_to_dict()
         for attr, value in d["attrs"].items():
@@ -620,10 +596,7 @@ class Div(HTMLBaseComponent):
                 s = f'{s}{attr}="{value}" '
         if self.style:
             s = f'{s}style="{self.style}"'
-        if self.classes:
-            s = f'{s}class="{self.classes}">{ws}'
-        else:
-            s = f"{s}>{ws}"
+        s = f'{s}class="{self.classes}">{ws}' if self.classes else f"{s}>{ws}"
         if self.inner_html:
             s = f"{s}{self.inner_html}</{self.html_tag}>{ws}"
             return s
@@ -643,7 +616,7 @@ class Div(HTMLBaseComponent):
 
     def build_list(self):
         object_list = []
-        for i, obj in enumerate(self.components):
+        for obj in self.components:
             obj.react(self.data)
             d = obj.convert_object_to_dict()
             object_list.append(d)
@@ -763,20 +736,19 @@ class Input(Div):
         # Set all radio buttons in container with same name as radio_button to unchecked
         if hasattr(container, "components"):
             for c in container.components:
-                if hasattr(c, "name"):
-                    if c.name == radio_button.name and not radio_button.id == c.id:
-                        c.checked = False
+                if (
+                    hasattr(c, "name")
+                    and c.name == radio_button.name
+                    and radio_button.id != c.id
+                ):
+                    c.checked = False
                 Input.radio_button_set(radio_button, c)
 
     @staticmethod
     def radio_button_set_model_update(radio_button, container, model_value):
         for c in container.components:
-            if hasattr(c, "name"):
-                if c.name == radio_button.name:
-                    if c.value == model_value:
-                        c.checked = True
-                    else:
-                        c.checked = False
+            if hasattr(c, "name") and c.name == radio_button.name:
+                c.checked = c.value == model_value
             Input.radio_button_set_model_update(radio_button, c, model_value)
 
     def model_update(self):
@@ -806,17 +778,13 @@ class Input(Div):
         d["attrs"]["value"] = self.value
         d["checked"] = self.checked
         if not self.no_events:
-            if self.type in ["radio", "checkbox", "select"] or self.type == "file":
+            if self.type in ["radio", "checkbox", "select", "file"]:
                 # Not all browsers create input event
                 if "change" not in self.events:
                     self.events.append("change")
-            else:
-                if "input" not in self.events:
-                    self.events.append("input")
-        if self.checked:
-            d["attrs"]["checked"] = True
-        else:
-            d["attrs"]["checked"] = False
+            elif "input" not in self.events:
+                self.events.append("input")
+        d["attrs"]["checked"] = bool(self.checked)
         try:
             d["attrs"]["form"] = self.form.id
         except:
@@ -983,7 +951,7 @@ class A(Div):
         d["block_option"] = self.block_option
         d["inline_option"] = self.inline_option
         if self.bookmark is not None:
-            self.href = "#" + str(self.bookmark.id)
+            self.href = f"#{str(self.bookmark.id)}"
             self.scroll_to = str(self.bookmark.id)
         if d["scroll"]:
             d["scroll_to"] = self.scroll_to
@@ -1004,7 +972,7 @@ class Icon(Div):
 
     def convert_object_to_dict(self):
         d = super().convert_object_to_dict()
-        d["classes"] = self.classes + " fa fa-" + self.icon
+        d["classes"] = f"{self.classes} fa fa-{self.icon}"
         return d
 
 
@@ -1107,11 +1075,8 @@ class TabGroup(Div):
             )
             self.wrapper_div.add(self.tabs[self.value]["tab"])
 
-        self.style = (
-            " position: relative; overflow: hidden; " + self.style
-        )  # overflow: hidden;
-        d = super().convert_object_to_dict()
-        return d
+        self.style = f" position: relative; overflow: hidden; {self.style}"
+        return super().convert_object_to_dict()
 
 
 # HTML tags for which corresponding classes will be created
@@ -2349,17 +2314,14 @@ class QHello(Hello):
 
 def component_by_tag(tag, attrs=[], **kwargs):
     # tag = tag.lower()
-    if tag[0:2] == "q-":
+    if tag[:2] == "q-":
         if tag in _tag_class_dict:
             c = _tag_class_dict[tag](**kwargs)
         else:
             raise ValueError(f"Tag not defined: {tag}")
     elif tag in JustPy.component_registry:
         attributes = JustPy.component_registry[tag]["attributes"]
-        attr_dict = {}
-        for attr in attrs:
-            if attr[0] in attributes:
-                attr_dict[attr[0]] = attr[1]
+        attr_dict = {attr[0]: attr[1] for attr in attrs if attr[0] in attributes}
         c = JustPy.component_registry[tag]["class"](**attr_dict)
     else:
         tag_class_name = tag[0].capitalize() + tag[1:]
@@ -2440,8 +2402,7 @@ class BasicHTMLParser(HTMLParser):
             "dict_attribute", "name"
         )  # Use another attribute than name
         self.root = Div(name="root")
-        self.containers = []
-        self.containers.append(self.root)
+        self.containers = [self.root]
         self.endtag_required = True
         self.create_commands = kwargs.get(
             "create_commands", True
@@ -2570,7 +2531,7 @@ class BasicHTMLParser(HTMLParser):
                 attr[0] = "classes"
             # Handle attributes that are also python reserved words
             if attr[0] in ["in", "from"]:
-                attr[0] = "_" + attr[0]
+                attr[0] = f"_{attr[0]}"
 
             if self.create_commands:
                 if isinstance(attr[1], str):
@@ -2600,8 +2561,7 @@ class BasicHTMLParser(HTMLParser):
         self.level = self.level - 1
 
     def handle_data(self, data):
-        data = data.strip()
-        if data:
+        if data := data.strip():
             self.containers[-1].text = data
             data = data.replace("'", "\\'")
             if self.create_commands:
@@ -2615,10 +2575,7 @@ class BasicHTMLParser(HTMLParser):
         c = chr(name2codepoint[name])
 
     def handle_charref(self, name):
-        if name.startswith("x"):
-            c = chr(int(name[1:], 16))
-        else:
-            c = chr(int(name))
+        c = chr(int(name[1:], 16)) if name.startswith("x") else chr(int(name))
 
     def handle_decl(self, data):
         pass
@@ -2673,10 +2630,7 @@ else:
 async def get(url, format="json"):
     async with httpx.AsyncClient() as client:
         result = await client.get(url)
-    if format == "json":
-        return result.json()
-    else:
-        return result.text
+    return result.json() if format == "json" else result.text
 
 
 try:

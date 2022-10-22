@@ -30,10 +30,7 @@ class SeleniumBrowsers:
         if len(self.browsers.values()) == 0:
             self.getBrowsers()
         browserList = list(self.browsers.values())
-        if len(browserList) > 0:
-            return browserList[0]
-        else:
-            return None
+        return browserList[0] if browserList else None
 
     def getBrowsers(self) -> List[WebDriver]:
         """
@@ -51,8 +48,7 @@ class SeleniumBrowsers:
         """
         options = FirefoxOptions()
         options.headless = self.headless
-        browser = webdriver.Firefox(options=options)
-        return browser
+        return webdriver.Firefox(options=options)
 
     def _getChromeWebDriver(self) -> webdriver.Chrome:
         """
@@ -62,5 +58,4 @@ class SeleniumBrowsers:
         options.headless = self.headless
         chrome_executable = ChromeDriverManager(cache_valid_range=365).install()
         service = ChromeService(chrome_executable)
-        browser = webdriver.Chrome(service=service, options=options)
-        return browser
+        return webdriver.Chrome(service=service, options=options)

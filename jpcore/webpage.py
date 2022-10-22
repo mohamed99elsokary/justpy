@@ -153,10 +153,7 @@ class WebPage:
             websocket_dict = WebPage.sockets[self.page_id]
         except:
             return self
-        if not built_list:
-            component_build = self.build_list()
-        else:
-            component_build = built_list
+        component_build = built_list or self.build_list()
         for websocket in list(websocket_dict.values()):
             try:
                 WebPage.loop.create_task(
@@ -211,7 +208,6 @@ class WebPage:
                 *[websocket.send_json(dict_to_send) for websocket in websockets],
                 return_exceptions=True,
             )
-            pass
         return self
 
     async def delayed_update(self, delay):
@@ -220,10 +216,7 @@ class WebPage:
 
     def to_html(self, indent=0, indent_step=0, format=True):
         block_indent = " " * indent
-        if format:
-            ws = "\n"
-        else:
-            ws = ""
+        ws = "\n" if format else ""
         s = f"{block_indent}<div>{ws}"
         for c in self.components:
             s = f"{s}{c.to_html(indent + indent_step, indent_step, format)}"
@@ -236,7 +229,7 @@ class WebPage:
     def build_list(self):
         object_list = []
         self.react()
-        for i, obj in enumerate(self.components):
+        for obj in self.components:
             obj.react(self.data)
             d = obj.convert_object_to_dict()
             object_list.append(d)
@@ -251,29 +244,25 @@ class WebPage:
             func(Callable): the function to call
             
         """
-        if event_type in self.allowed_events:
-            if inspect.ismethod(func):
-                setattr(self, "on_" + event_type, func)
-            else:
-                setattr(self, "on_" + event_type, MethodType(func, self))
-            if event_type not in self.events:
-                self.events.append(event_type)
-        else:
+        if event_type not in self.allowed_events:
             raise Exception(f"No event of type {event_type} supported")
+        if inspect.ismethod(func):
+            setattr(self, f"on_{event_type}", func)
+        else:
+            setattr(self, f"on_{event_type}", MethodType(func, self))
+        if event_type not in self.events:
+            self.events.append(event_type)
 
     async def run_event_function(
         self, event_type, event_data, create_namespace_flag=True
     ):
-        event_function = getattr(self, "on_" + event_type)
-        if create_namespace_flag:
-            function_data = Dict(event_data)
-        else:
-            function_data = event_data
-        if inspect.iscoroutinefunction(event_function):
-            event_result = await event_function(function_data)
-        else:
-            event_result = event_function(function_data)
-        return event_result
+        event_function = getattr(self, f"on_{event_type}")
+        function_data = Dict(event_data) if create_namespace_flag else event_data
+        return (
+            await event_function(function_data)
+            if inspect.iscoroutinefunction(event_function)
+            else event_function(function_data)
+        )
 
     def add_event(self, event):
         if event not in self.allowed_events:

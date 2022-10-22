@@ -32,7 +32,7 @@ class Calculator(Div):
             calc.tape.value = calc.result.value
         else:
             if calc.tape.value[-1] in '*+-/' or self.text in '*+-/':
-                calc.tape.value += ' ' + self.text
+                calc.tape.value += f' {self.text}'
             else:
                 calc.tape.value += self.text
             try:
@@ -44,7 +44,7 @@ class Calculator(Div):
 
 def calculator_test1():
     wp = WebPage()
-    for i in range(10):
+    for _ in range(10):
         c = Calculator(a=wp, classes='m-1 border inline-block', style='width: 250px')
     return wp
 

@@ -20,8 +20,7 @@ class TestDatabaseExample(BaseSeleniumTest):
         
     def findElement(self,condition,timeout=4.0):
         element_present = EC.presence_of_element_located(condition)
-        element=WebDriverWait(self.browser, timeout).until(element_present)
-        return element
+        return WebDriverWait(self.browser, timeout).until(element_present)
         
     async def testDatabaseExample(self):
         """

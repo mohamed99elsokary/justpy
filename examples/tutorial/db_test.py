@@ -30,9 +30,10 @@ table_names = [
     "sqlite_stat1",
 ]
 
-tables = {}
-for table_name in table_names:
-    tables[table_name] = pd.read_sql_query(f"SELECT * from {table_name}", db_con)
+tables = {
+    table_name: pd.read_sql_query(f"SELECT * from {table_name}", db_con)
+    for table_name in table_names
+}
 
 
 def selected_event(self, msg):

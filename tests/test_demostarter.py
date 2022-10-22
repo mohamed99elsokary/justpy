@@ -24,10 +24,7 @@ class TestDemoStarter(BaseAsynctest):
         """
         demo_starter = Demostarter(debug=True, mode="process")
         debug=True
-        foundVideos=0
-        for demo in demo_starter.demos:
-            if demo.video_url is not None:
-                foundVideos+=1
+        foundVideos = sum(demo.video_url is not None for demo in demo_starter.demos)
         if debug:
             print(f"found {foundVideos} videos")
         self.assertTrue(foundVideos>=30)
@@ -49,14 +46,4 @@ class TestDemoStarter(BaseAsynctest):
         test the demo starter
         """
         #@TODO reenable test
-        return 
-        demoStarter = Demostarter(debug=True, mode="process")
-
-        await demoStarter.start(limit=2)
-
-        # wait a bit
-        await asyncio.sleep(2.0)
-        # stop all servers
-        await demoStarter.stop()
-        with self.subTest("testDemoStarter", demoStarter=demoStarter):
-            self.assertEqual(0, len(demoStarter.errors.values()))
+        return

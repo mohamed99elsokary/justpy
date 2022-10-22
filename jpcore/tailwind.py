@@ -1847,9 +1847,10 @@ class Tailwind:
             class_list.append(tw_class)
         else:
             tw_dict_modified = [
-                f"{modifier}:" + i
+                f"{modifier}:{i}"
                 for i in Tailwind.tw_dict[Tailwind.tw_reverse_dict[tw_class]]
             ]
+
             tw_class_modified = f"{modifier}:{tw_class}"
             for i in class_list:
                 if i in tw_dict_modified:

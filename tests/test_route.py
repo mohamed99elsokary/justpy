@@ -95,7 +95,6 @@ class TestRouteAndUrlFor(BaseClienttest):
             urlfor=response.text
             print(urlfor)
             self.assertEqual(urlfor,f"http://testserver/{url}")
-            pass
     
     def testResponses(self):
         

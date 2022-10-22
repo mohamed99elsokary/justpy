@@ -48,5 +48,4 @@ class BaseSeleniumTest(BaseAsynctest):
             browser: WebDriver
             timeout: maximum time to wait
         """
-        driver = WebDriverWait(browser, timeout)
-        return driver
+        return WebDriverWait(browser, timeout)

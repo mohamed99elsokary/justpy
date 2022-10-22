@@ -10,9 +10,9 @@ async def input_demo_model4(request):
     b = jp.Button(text='Reset', click=reset_all, a=wp, classes=button_classes)
     jp.Hr(a=wp)  # Add horizontal like to page
     input_classes = "m-2 bg-gray-200 appearance-none border-2 border-gray-200 rounded xtw-64 py-2 px-4 text-gray-700 focus:outline-none focus:bg-white focus:border-purple-500"
-    for i in range(5):
+    for _ in range(5):
         jp.Input(a=wp, classes=input_classes, placeholder='Please type here', model=[wp, 'text'])
-    for i in range(3):
+    for _ in range(3):
         jp.Div(model=[wp, 'text'], classes='m-2 p-2 h-32 text-xl border-2 overflow-auto', a=wp)
     return wp
 

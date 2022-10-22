@@ -9,7 +9,7 @@ def input_test1(request):
     icon2 = jp.QIcon(name='place', color='red')
     for slot in ['append', 'prepend', 'before']:
         in1 = jp.QInput(label=slot, filled=True, hint=f'Icon is in slot "{slot}" and "after"', a=c2, after_slot=icon2)
-        setattr(in1, slot + '_slot', icon1)
+        setattr(in1, f'{slot}_slot', icon1)
     return wp
 
 # initialize the demo
